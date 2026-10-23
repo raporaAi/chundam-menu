@@ -27,3 +27,11 @@ push하면 Vercel이 자동 배포한다.
 ## QR 코드
 
 `qr/` 폴더에 언어별 QR이 있다(`qr-ja`, `qr-en`, `qr-zh`, 각각 SVG·PNG). 주소가 QR 안에 직접 들어 있는 정적 QR이라 외부 서비스 종속이 없다. 인쇄는 SVG를 쓰고, 세 QR 옆에 日本語 / English / 中文 라벨을 함께 넣는다.
+
+## 리뷰 키워드 (관리자용)
+
+`/admin/reviews`에서 네이버 플레이스 방문자 리뷰의 월별 키워드 워드 클라우드를 본다. `/admin/reviews/2026-10`처럼 뒤에 연-월을 붙이면 그 달로 바로 간다. 메뉴판 어디에서도 링크하지 않고 검색엔진 색인도 막아 둔 비공개 주소다. 로그인은 없다.
+
+- `reviews/YYYY-MM.json`: 그 달 리뷰 수와 키워드 빈도(리뷰 1건당 키워드 1회). 리뷰 원문은 저장소에 넣지 않는다.
+- `scripts/aggregate.py`: 수집한 원문 JSON(`[{"date", "text"}]`)을 월별 키워드 파일로 바꾼다. kiwipiepy 형태소 분석기로 명사와 형용사를 뽑는다.
+- 수집은 네이버 플레이스 리뷰 API(`api.place.naver.com/graphql`, getVisitorReviews)를 브라우저 세션에서 커서로 페이지네이션한다. 매장 id 2079876696(춘담 마곡본점).

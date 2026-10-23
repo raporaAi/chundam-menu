@@ -3,6 +3,8 @@
   "rewrites": [
     { "source": "/ja", "destination": "/" },
     { "source": "/en", "destination": "/" },
-    { "source": "/zh", "destination": "/" }
+    { "source": "/zh", "destination": "/" },
+    { "source": "/admin/reviews", "destination": "/admin" },
+    { "source": "/admin/reviews/:month", "destination": "/admin" }
   ]
 }

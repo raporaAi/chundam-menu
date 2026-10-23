@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>춘담 리뷰</title>
+  <style>
+    :root { --bg: #faf8f5; --ink: #1f1d1a; --muted: #6b665e; --line: #ddd7cc; --accent: #9a3b2e; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); }
+    body { font-family: -apple-system, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; color: var(--ink); line-height: 1.5; }
+    main { max-width: 960px; margin: 0 auto; padding: 28px 16px 60px; }
+    h1 { font-size: 20px; font-weight: 600; margin: 0; }
+    .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .top a { color: var(--muted); font-size: 13px; text-decoration: none; }
+
+    /* months */
+    .months { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .months a { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); text-decoration: none; font-size: 14px; background: #fff; }
+    .months a small { color: var(--muted); margin-left: 4px; }
+    .months a[aria-current="page"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .months a[aria-current="page"] small { color: #cfc9bf; }
+
+    /* cloud */
+    .meta { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+    .cloud { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 70vh; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+    .cloud canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    @media (max-width: 600px) { .cloud { aspect-ratio: 4 / 5; } }
+    .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 14px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 500; font-size: 13px; }
+    td.n { text-align: right; font-variant-numeric: tabular-nums; width: 80px; }
+  </style>
+</head>
+<body>
+  <main id="app"></main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+  <script>
+    const app = document.getElementById('app');
+    const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const month = (location.pathname.match(/\/admin\/reviews\/(\d{4}-\d{2})/) || [])[1] || null;
+
+    async function renderApp() {
+      const index = await fetch('/reviews/index.json').then(r => r.ok ? r.json() : { months: [] });
+      const months = index.months || [];
+      const current = month || (months[0] && months[0].month);
+      if (month && !months.some(m => m.month === month)) {
+        history.replaceState(null, '', '/admin/reviews');
+      }
+      const label = (m) => m.replace(/^(\d{4})-(\d{2})$/, (_, y, mm) => `${y}년 ${Number(mm)}월`);
+
+      app.innerHTML = `
+        <div class="top"><h1>춘담 네이버 리뷰 키워드</h1></div>
+        <nav class="months">${months.map(m =>
+          `<a href="/admin/reviews/${m.month}" ${m.month === current ? 'aria-current="page"' : ''}>${label(m.month)}<small>${m.count}</small></a>`).join('')}</nav>
+        <div id="body"></div>`;
+
+      const body = document.getElementById('body');
+      if (!current) { body.innerHTML = '<p class="empty">아직 수집된 리뷰가 없습니다.</p>'; return; }
+
+      const data = await fetch(`/reviews/${current}.json`).then(r => r.json());
+      const words = data.words || [];
+      body.innerHTML = `
+        <p class="meta">${label(current)} · 리뷰 ${data.count}건 · 키워드 ${words.length}개</p>
+        <div class="cloud"><canvas id="canvas"></canvas></div>
+        <table><thead><tr><th>키워드</th><th class="n">언급</th></tr></thead>
+          <tbody>${words.slice(0, 30).map(([w, n]) => `<tr><td>${esc(w)}</td><td class="n">${n}</td></tr>`).join('')}</tbody></table>`;
+
+      drawCloud(document.getElementById('canvas'), words);
+    }
+
+    function drawCloud(canvas, words) {
+      const box = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = box.width * dpr; canvas.height = box.height * dpr;
+      if (!words.length) return;
+      const max = words[0][1];
+      const base = Math.min(box.width, box.height) / 4.5;
+      const palette = ['#1f1d1a', '#3b3733', '#6b665e', '#9a3b2e', '#7a5c3a'];
+      WordCloud(canvas, {
+        list: words.slice(0, 120),
+        gridSize: Math.round(4 * dpr),
+        weightFactor: (n) => Math.max(11, Math.sqrt(n / max) * base) * dpr,
+        fontFamily: '"Apple SD Gothic Neo", "Noto Sans KR", sans-serif',
+        fontWeight: '600',
+        color: (w, n) => palette[n === max ? 3 : Math.floor(Math.random() * 3)],
+        rotateRatio: 0.15,
+        rotationSteps: 2,
+        backgroundColor: '#ffffff',
+        shuffle: false,
+        drawOutOfBound: false,
+        shrinkToFit: true,
+      });
+    }
+
+    renderApp();
+  </script>
+</body>
+</html>
