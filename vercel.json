@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/:lang(ja|en|zh)", "destination": "/index.html" }
+  ]
+}

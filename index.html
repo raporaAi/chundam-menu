@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>Chundam Menu</title>
+  <style>
+    :root { --bg: #f5f3ee; --bar: rgba(245, 243, 238, 0.92); --ink: #222; --line: #d9d4ca; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); }
+    body { font-family: -apple-system, system-ui, "Noto Sans", sans-serif; color: var(--ink); }
+
+    .viewer {
+      height: 100dvh;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 52px;
+    }
+    .viewer img {
+      display: block;
+      height: calc(100dvh - 52px);
+      width: auto;
+      max-width: none;
+    }
+    @media (orientation: landscape) {
+      .viewer img { width: 100vw; height: auto; }
+    }
+
+    .bar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: 52px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px env(safe-area-inset-bottom);
+      background: var(--bar);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(6px);
+    }
+    .bar a {
+      padding: 8px 18px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1;
+    }
+    .bar a[aria-current="page"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  </style>
+</head>
+<body>
+  <div class="viewer">
+    <img id="menu" alt="Chundam menu">
+  </div>
+  <nav class="bar">
+    <a href="/ja" data-lang="ja">日本語</a>
+    <a href="/en" data-lang="en">English</a>
+    <a href="/zh" data-lang="zh">中文</a>
+  </nav>
+  <script>
+    const TITLES = { ja: 'チュンダム メニュー', en: 'Chundam Menu', zh: '春谈 菜单' };
+    const fromPath = location.pathname.replace(/\//g, '');
+    let lang = TITLES[fromPath] ? fromPath : null;
+    if (!lang) {
+      const pref = (navigator.languages || [navigator.language || 'en']).map(l => l.slice(0, 2));
+      lang = pref.find(l => TITLES[l]) || 'en';
+      history.replaceState(null, '', '/' + lang);
+    }
+    document.documentElement.lang = lang;
+    document.title = TITLES[lang];
+    document.getElementById('menu').src = '/menu/' + lang + '.webp';
+    document.querySelector(`.bar a[data-lang="${lang}"]`).setAttribute('aria-current', 'page');
+  </script>
+</body>
+</html>
