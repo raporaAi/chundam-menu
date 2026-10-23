@@ -7,60 +7,88 @@
   <link rel="icon" href="data:,">
   <title>Chundam Menu</title>
   <style>
-    :root { --bg: #f5f3ee; --bar: rgba(245, 243, 238, 0.92); --ink: #222; --line: #d9d4ca; }
+    :root {
+      --bg: #faf8f5;
+      --ink: #1f1d1a;
+      --muted: #6b665e;
+      --line: #ddd7cc;
+      --bar: rgba(250, 248, 245, 0.94);
+      --serif: Georgia, "Times New Roman", serif;
+    }
+    html[lang="ja"] { --serif: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; }
+    html[lang="zh"] { --serif: "Songti SC", "Noto Serif SC", "SimSun", serif; }
+
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--bg); }
-    body { font-family: -apple-system, system-ui, "Noto Sans", sans-serif; color: var(--ink); }
+    html, body { margin: 0; background: var(--bg); }
+    body {
+      font-family: var(--serif);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    main { max-width: 560px; margin: 0 auto; padding: 32px 20px 96px; }
 
-    .viewer {
-      height: 100dvh;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 52px;
-    }
-    .viewer img {
-      display: block;
-      height: calc(100dvh - 52px);
-      width: auto;
-      max-width: none;
-    }
-    @media (orientation: landscape) {
-      .viewer img { width: 100vw; height: auto; }
-    }
+    /* header */
+    .brand { text-align: center; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .brand img { width: 140px; height: auto; display: block; margin: 0 auto 4px; }
+    .brand .sub { font-size: 15px; letter-spacing: 0.3em; margin: 0 0 20px; }
+    html[lang="en"] .brand .sub { letter-spacing: 0.35em; }
+    .brand .tagline { font-size: 20px; margin: 0 0 12px; }
+    .brand .intro { font-size: 13.5px; color: var(--muted); margin: 0; }
 
+    /* sections */
+    section { padding: 24px 0 8px; border-bottom: 1px solid var(--line); }
+    h2 { font-size: 20px; font-weight: 600; margin: 0 0 14px; }
+    .item { display: flex; gap: 14px; align-items: center; padding: 8px 0; }
+    .item img {
+      flex: 0 0 104px; width: 104px; height: 66px;
+      object-fit: cover; border-radius: 4px; background: #d3c1ab;
+    }
+    .item .name { font-size: 15.5px; margin: 0; }
+    .item .price { font-size: 14px; color: var(--muted); margin: 2px 0 0; font-variant-numeric: tabular-nums; }
+
+    .item.featured { display: block; }
+    .item.featured img { width: 100%; height: auto; aspect-ratio: 231 / 129; margin-bottom: 10px; }
+    .item.featured .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    .item.featured .price { margin: 0; white-space: nowrap; }
+    .item.featured .desc { font-size: 13.5px; color: var(--muted); margin: 6px 0 0; }
+
+    /* footer */
+    footer { text-align: center; padding: 28px 0 0; }
+    .feature { margin-bottom: 18px; }
+    .feature h3 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+    .feature p { font-size: 13.5px; color: var(--muted); margin: 0; }
+    .hours { margin: 26px 0 0; padding-top: 22px; border-top: 1px solid var(--line); }
+    .hours h3 { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+    .hours p { margin: 0; font-size: 14px; }
+    .hours p.small { font-size: 12.5px; color: var(--muted); }
+    .closing { font-size: 13px; color: var(--muted); margin: 30px 0 0; }
+
+    /* language bar */
     .bar {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: 52px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px 16px env(safe-area-inset-bottom);
-      background: var(--bar);
-      border-top: 1px solid var(--line);
+      position: fixed; left: 0; right: 0; bottom: 0;
+      display: flex; justify-content: center; gap: 8px;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      background: var(--bar); border-top: 1px solid var(--line);
       backdrop-filter: blur(6px);
     }
     .bar a {
-      padding: 8px 18px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      text-decoration: none;
-      color: var(--ink);
-      font-size: 14px;
-      line-height: 1;
+      padding: 8px 18px; border: 1px solid var(--line); border-radius: 999px;
+      text-decoration: none; color: var(--ink); font-size: 14px; line-height: 1;
+      font-family: -apple-system, system-ui, sans-serif;
     }
     .bar a[aria-current="page"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
   </style>
 </head>
 <body>
-  <div class="viewer">
-    <img id="menu" alt="Chundam menu">
-  </div>
+  <main id="app"></main>
   <nav class="bar">
     <a href="/ja" data-lang="ja">日本語</a>
     <a href="/en" data-lang="en">English</a>
     <a href="/zh" data-lang="zh">中文</a>
   </nav>
+
+  <script src="/menu.js"></script>
   <script>
     const TITLES = { ja: 'チュンダム メニュー', en: 'Chundam Menu', zh: '春谈 菜单' };
     const fromPath = location.pathname.replace(/\//g, '');
@@ -72,8 +100,42 @@
     }
     document.documentElement.lang = lang;
     document.title = TITLES[lang];
-    document.getElementById('menu').src = '/menu/' + lang + '.webp';
     document.querySelector(`.bar a[data-lang="${lang}"]`).setAttribute('aria-current', 'page');
+
+    const t = (obj) => (typeof obj === 'string' ? obj : obj[lang]);
+    const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const price = (p) => [].concat(p).map(n => n.toLocaleString('en-US') + MENU.currency[lang]).join(' / ');
+
+    const item = (it) => it.desc
+      ? `<div class="item featured">
+           <img src="/menu/dishes/${it.photo}.webp" alt="">
+           <div class="head"><p class="name">${esc(t(it.name))}</p><p class="price">${price(it.price)}</p></div>
+           <p class="desc">${esc(t(it.desc))}</p>
+         </div>`
+      : `<div class="item">
+           <img src="/menu/dishes/${it.photo}.webp" alt="" loading="lazy">
+           <div><p class="name">${esc(t(it.name))}</p><p class="price">${price(it.price)}</p></div>
+         </div>`;
+
+    const h = MENU.hours;
+    document.getElementById('app').innerHTML = `
+      <header class="brand">
+        <img src="/menu/logo.webp" alt="춘담">
+        <p class="sub">${esc(t(MENU.brand.sub))}</p>
+        <p class="tagline">${esc(t(MENU.brand.tagline))}</p>
+        <p class="intro">${esc(t(MENU.brand.intro))}</p>
+      </header>
+      ${MENU.sections.map(s => `<section><h2>${esc(t(s.title))}</h2>${s.items.map(item).join('')}</section>`).join('')}
+      <footer>
+        ${MENU.features.map(f => `<div class="feature"><h3>${esc(t(f.title))}</h3><p>${esc(t(f.desc))}</p></div>`).join('')}
+        <div class="hours">
+          <h3>${esc(t(h.title))}</h3>
+          <p>${h.open}</p>
+          <p class="small">${esc(t(h.lastOrder.label))} ${h.lastOrder.value}</p>
+          <p class="small">${esc(t(h.breakTime.label))} ${h.breakTime.value}</p>
+        </div>
+        <p class="closing">${esc(t(MENU.closing))}</p>
+      </footer>`;
   </script>
 </body>
 </html>
